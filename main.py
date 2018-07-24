@@ -1,3 +1,5 @@
+"""generates training data"""
+
 from ponggame import *
 import threading
 

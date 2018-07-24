@@ -13,14 +13,7 @@ plt.ion()
 class Pong(Environment):
 
     def __init__(self):
-        self.width,self.height = 800,600
-        self.leftPaddle = pygame.Rect([50,self.height/2,20,50])
-        self.rightPaddle = pygame.Rect([self.width-70,self.height/2,20,50])
-        self.setBall()
-        self.steps = 0
-        self.leftDir = 0
-        self.rightDir = 0
-        self.score = [0,0]
+        self.reset()
 
 
     def setBall(self):
@@ -54,7 +47,9 @@ class Pong(Environment):
             self.ballSpeed.x *= -1
 
         self.steps+=1
-        return np.array([self.leftPaddle[1],self.ballPos.x,self.ballPos.y,self.ballSpeed.x,self.ballSpeed.y])
+        obs = np.array([self.leftPaddle[1],self.ballPos.x,self.ballPos.y,self.ballSpeed.x,self.ballSpeed.y])
+
+        return obs
 
     def performAction(self,action):
         print("performAction")
@@ -67,7 +62,14 @@ class Pong(Environment):
             self.rightDir = -1
 
     def reset(self):
-        self.__init__()
+        self.width,self.height = 800,600
+        self.leftPaddle = pygame.Rect([50,self.height/2,20,50])
+        self.rightPaddle = pygame.Rect([self.width-70,self.height/2,20,50])
+        self.setBall()
+        self.steps = 0
+        self.leftDir = 0
+        self.rightDir = 0
+        self.score = [0,0]
 
 
 class PongTask(Task):
@@ -78,12 +80,16 @@ class PongTask(Task):
         score = self.env.score
         return score[0]-score[1]
 
+    def isFinished(self):
+        return self.env.steps > 1000
+
+
 
 environment = Pong()
 controller = ActionValueTable(5,3)
 controller.initialize(1.)
 learner = Q()
-agent = LearningAgent(controller, learner)
+agent = LearningAgent(controller, learner=learner)
 task = PongTask(environment)
 
 experiment = Experiment(task,agent)
@@ -91,5 +97,3 @@ while True:
     experiment.doInteractions(100)
     agent.learn()
     agent.reset()
-    pylab.pcolor(controller.params.reshape(5,3).max(1).reshape(9,9))
-    pylab.draw()
