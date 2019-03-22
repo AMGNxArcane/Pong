@@ -123,7 +123,7 @@ class Brain:
         if self.model:
             if random.random() < self.randPercent:
                 return random.randint(-1,1)
-            input = np.array(leftState).reshape(-1,5)
-            return np.argmax(self.nn.predict(input))-1
+            input = np.array(input).reshape(-1,5)
+            return np.argmax(self.model.predict(input))-1
         else:
             return random.randint(-1,1)
